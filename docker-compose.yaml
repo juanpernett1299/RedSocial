@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  auth-service:
+    build: ./backend/auth
+    container_name: auth_service
+    environment:
+      - DATABASE_URL=postgresql://admin:admin123@db:5432/socialdb?schema=public
+      - JWT_SECRET=your_super_secret_key
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./backend/auth:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - db
+    networks:
+      - social_network
+
+  posts-service:
+    build: ./backend/posts
+    container_name: posts_service
+    environment:
+      - DATABASE_URL=postgresql://admin:admin123@db:5432/socialdb?schema=public
+      - JWT_SECRET=your_super_secret_key
+    ports:
+      - "3002:3002"
+    volumes:
+      - ./backend/posts:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - db
+    networks:
+      - social_network
+
+  users-service:
+    build: ./backend/users
+    container_name: users_service
+    environment:
+      - DATABASE_URL=postgresql://admin:admin123@db:5432/socialdb?schema=public
+      - JWT_SECRET=your_super_secret_key
+    ports:
+      - "3003:3003"
+    volumes:
+      - ./backend/users:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - db
+    networks:
+      - social_network
+
+  db:
+    image: postgres:15
+    container_name: social_postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: socialdb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - social_network
+
+volumes:
+  pgdata:
+
+networks:
+  social_network:
+    driver: bridge

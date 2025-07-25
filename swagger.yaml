@@ -1,0 +1,279 @@
+openapi: 3.0.0
+info:
+  title: Red Social - API de Microservicios
+  description: |-
+    Documentación de la API de Red Social.
+    Esta API está dividida en tres microservicios principales:
+    - **Servicio de Usuarios**: Gestiona los perfiles y datos de los usuarios.
+    - **Servicio de Publicaciones**: Gestiona la creación, visualización y likes de las publicaciones.
+    - **Servicio de Autenticación**: Gestiona el login y la emisión de tokens JWT.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3003
+    description: Servicio de Usuarios
+  - url: http://localhost:3002
+    description: Servicio de Publicaciones
+  - url: http://localhost:3001
+    description: Servicio de Autenticación
+
+tags:
+  - name: Users
+    description: Operaciones sobre los usuarios
+  - name: Posts
+    description: Operaciones sobre las publicaciones
+  - name: Auth
+    description: Operaciones de autenticación
+
+paths:
+  # Endpoints de Users
+  /users/{id}:
+    get:
+      tags:
+        - Users
+      summary: Obtener el perfil de un usuario
+      description: Devuelve la información del perfil de un usuario específico por su ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: El ID numérico del usuario.
+      responses:
+        '200':
+          description: Perfil del usuario encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: Usuario no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Endpoints de Posts
+  /posts:
+    get:
+      tags:
+        - Posts
+      summary: Listar todas las publicaciones
+      description: Devuelve una lista paginada de todas las publicaciones, incluyendo información básica del autor.
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Número de la página a solicitar.
+        - in: query
+          name: size
+          schema:
+            type: integer
+            default: 10
+          description: Cantidad de publicaciones por página.
+      responses:
+        '200':
+          description: Una lista de publicaciones.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PostWithAuthor'
+    post:
+      tags:
+        - Posts
+      summary: Crear una nueva publicación
+      description: Crea una nueva publicación para un usuario. El ID del usuario debe ser proporcionado.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewPostRequest'
+      responses:
+        '201':
+          description: Publicación creada exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+
+  /posts/{id}/likes:
+    post:
+      tags:
+        - Posts
+      summary: Dar 'like' a una publicación
+      description: Registra un 'like' de un usuario a una publicación específica.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: El ID de la publicación a la que se le dará like.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewLikeRequest'
+      responses:
+        '201':
+          description: Like registrado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Like'
+
+  # Endpoints de Auth
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Iniciar sesión
+      description: Autentica a un usuario con su nombre de usuario y contraseña y devuelve un token JWT si es exitoso.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Autenticación exitosa.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JWTResponse'
+        '401':
+          description: Credenciales inválidas.
+
+components:
+  schemas:
+    # Modelos de datos
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        username:
+          type: string
+          example: jane_doe
+        first_name:
+          type: string
+          example: Jane
+        last_name:
+          type: string
+          example: Doe
+        birth_date:
+          type: string
+          format: date-time
+          example: '1990-01-15T00:00:00.000Z'
+        alias:
+          type: string
+          example: Jany
+        created_at:
+          type: string
+          format: date-time
+    Post:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 101
+        message:
+          type: string
+          example: 'Este es mi primer post!'
+        created_at:
+          type: string
+          format: date-time
+        user_id:
+          type: integer
+          example: 1
+    PostWithAuthor:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 101
+        message:
+          type: string
+          example: 'Este es mi primer post!'
+        created_at:
+          type: string
+          format: date-time
+        user:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            first_name:
+              type: string
+              example: Jane
+            last_name:
+              type: string
+              example: Doe
+            alias:
+              type: string
+              example: Jany
+    Like:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        post_id:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+    
+    # Modelos para Requests y Responses
+    NewPostRequest:
+      type: object
+      properties:
+        message:
+          type: string
+          example: 'Un nuevo pensamiento para compartir.'
+        user_id:
+          type: integer
+          description: "ID del usuario que crea el post (vendría del token JWT en una implementación real)."
+          example: 1
+    NewLikeRequest:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          description: "ID del usuario que da el like (vendría del token JWT en una implementación real)."
+          example: 2
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          example: 'jane_doe'
+        password:
+          type: string
+          format: password
+          example: 'password123'
+    JWTResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+
+    # Modelo de Error Genérico
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          example: 'Recurso no encontrado.'
