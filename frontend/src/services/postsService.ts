@@ -1,7 +1,7 @@
 import axios, { type AxiosPromise } from 'axios';
 import type { PostsApiResponse } from '../types/post';
 
-const API_BASE_URL = 'http://localhost:3002';
+const API_BASE_URL = 'http://localhost:3002'; 
 
 class PostsService {
   getPosts(page: number, size: number, token: string): AxiosPromise<PostsApiResponse> {

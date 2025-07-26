@@ -1,7 +1,7 @@
 import axios, { type AxiosPromise } from 'axios';
 import type { User } from '../types/user';
 
-const API_BASE_URL = 'http://localhost:3003';
+const API_BASE_URL = 'http://localhost:3003'; 
 
 class UserService {
   getUserProfile(id: string, token: string): AxiosPromise<User> {
