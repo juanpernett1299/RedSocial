@@ -6,7 +6,7 @@ info:
     Esta API está dividida en tres microservicios principales:
     - **Servicio de Usuarios**: Gestiona los perfiles y datos de los usuarios.
     - **Servicio de Publicaciones**: Gestiona la creación, visualización y likes de las publicaciones.
-    - **Servicio de Autenticación**: Gestiona el login y la emisión de tokens JWT.
+    - **Servicio de Autenticación**: Gestiona la emisión de tokens JWT.
   version: 1.0.0
 
 servers:
@@ -107,7 +107,7 @@ paths:
       tags:
         - Posts
       summary: Dar 'like' a una publicación
-      description: Registra un 'like' de un usuario a una publicación específica.
+      description: Registra un 'like' de un usuario a una publicación específica. El ID del usuario se obtiene del token de autenticación.
       parameters:
         - in: path
           name: id
@@ -115,12 +115,6 @@ paths:
           schema:
             type: integer
           description: El ID de la publicación a la que se le dará like.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/NewLikeRequest'
       responses:
         '201':
           description: Like registrado exitosamente.
@@ -128,6 +122,29 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Like'
+        '409':
+          description: El usuario ya ha dado 'like' a esta publicación.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Posts
+      summary: Quitar 'like' a una publicación
+      description: Elimina un 'like' de un usuario a una publicación específica. El ID del usuario se obtiene del token de autenticación.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: El ID de la publicación a la que se le quitará el like.
+      responses:
+        '204':
+          description: Like eliminado exitosamente.
+        '404':
+          description: No se encontró un 'like' de este usuario en esta publicación.
 
   # Endpoints de Auth
   /auth/login:
@@ -242,17 +259,9 @@ components:
         message:
           type: string
           example: 'Un nuevo pensamiento para compartir.'
-        user_id:
-          type: integer
-          description: "ID del usuario que crea el post (vendría del token JWT en una implementación real)."
-          example: 1
     NewLikeRequest:
       type: object
-      properties:
-        user_id:
-          type: integer
-          description: "ID del usuario que da el like (vendría del token JWT en una implementación real)."
-          example: 2
+      properties: {}
     LoginRequest:
       type: object
       properties:

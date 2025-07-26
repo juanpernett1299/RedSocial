@@ -4,7 +4,8 @@ const likeDAO = require('../db/likeDAO');
 const getPaginatedPosts = async (req, res) => {
   const page = parseInt(req.query.page, 10) || 1;
   const size = parseInt(req.query.size, 10) || 10;
-  const paginatedPosts = await postDAO.getPaginatedPosts(page, size);
+  const userId = req.user.id;
+  const paginatedPosts = await postDAO.getPaginatedPosts(page, size, userId);
   res.json(paginatedPosts);
 };
 
@@ -43,8 +44,27 @@ const likePost = async (req, res) => {
   }
 };
 
+const unlikePost = async (req, res) => {
+  try {
+    const postId = parseInt(req.params.id, 10);
+    const userId = req.user.id; // Obtenido del token JWT
+
+    const deletedLike = await likeDAO.unlikePost(postId, userId);
+
+    if (deletedLike.count === 0) {
+      return res.status(404).json({ message: 'Like not found' });
+    }
+
+    res.status(204).send(); // No content
+  } catch (error) {
+    console.error('Unlike post error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 module.exports = {
   getPaginatedPosts,
   createPost,
-  likePost
+  likePost,
+  unlikePost
 };

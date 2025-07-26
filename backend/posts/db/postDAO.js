@@ -7,7 +7,7 @@ const getPostById = async (id) => {
   return post;
 };
 
-const getPaginatedPosts = async (page, size) => {
+const getPaginatedPosts = async (page, size, userId) => {
   const posts = await prisma.post.findMany({
     skip: (page - 1) * size,
     take: size,
@@ -23,6 +23,19 @@ const getPaginatedPosts = async (page, size) => {
           last_name: true,
           alias: true
         }
+      },
+      likes: {
+        where: {
+          user_id: userId
+        },
+        select: {
+          id: true
+        }
+      },
+      _count: {
+        select: {
+          likes: true
+        }
       }
     },
     orderBy: {
@@ -30,7 +43,23 @@ const getPaginatedPosts = async (page, size) => {
     }
   });
 
-  return { elements: posts, total: posts.length, page, size };
+  const postsWithLikeInfo = posts.map((post) => {
+    const { likes, _count, ...rest } = post;
+    return {
+      ...rest,
+      totalLikes: _count.likes,
+      likedByCurrentUser: likes.length > 0
+    };
+  });
+
+  const totalPosts = await prisma.post.count();
+
+  return {
+    elements: postsWithLikeInfo,
+    total: totalPosts,
+    page,
+    size
+  };
 };
 
 const createPost = async (message, userId) => {

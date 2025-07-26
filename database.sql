@@ -29,8 +29,3 @@ CREATE TABLE likes (
     CONSTRAINT fk_likes_post FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
     CONSTRAINT unique_like UNIQUE (user_id, post_id)
 );
-
--- Índices opcionales para optimizar consultas
-CREATE INDEX idx_posts_user ON posts(user_id);
-CREATE INDEX idx_likes_user ON likes(user_id);
-CREATE INDEX idx_likes_post ON likes(post_id);

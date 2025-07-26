@@ -10,6 +10,17 @@ const likePost = async (postId, userId) => {
   return like;
 };
 
+const unlikePost = async (postId, userId) => {
+  const deletedLike = await prisma.like.deleteMany({
+    where: {
+      post_id: postId,
+      user_id: userId
+    }
+  });
+  return deletedLike;
+};
+
 module.exports = {
-  likePost
+  likePost,
+  unlikePost
 };
