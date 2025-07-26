@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import {
   Box,
   Container,
@@ -9,29 +9,12 @@ import {
 } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import Post from '../components/Post'
+import type { PostsApiResponse } from '../types/post'
+import { postsService } from '../services/postsService'
+import { AuthContext } from '../context/AuthContext'
+import axios from 'axios'
 
-interface User {
-  id: number
-  first_name: string
-  last_name: string
-  alias: string
-}
-
-interface PostData {
-  id: number
-  message: string
-  created_at: string
-  user: User
-}
-
-interface PostsResponse {
-  elements: PostData[]
-  size: number
-  page: number
-  total: number
-}
-
-const StyledPagination = styled(Pagination)(({ theme }) => ({
+const StyledPagination = styled(Pagination)(() => ({
   '& .MuiPagination-ul': {
     justifyContent: 'center',
   },
@@ -66,60 +49,35 @@ const StyledPagination = styled(Pagination)(({ theme }) => ({
 }))
 
 const PostsPage = () => {
-  const [postsData, setPostsData] = useState<PostsResponse | null>(null)
+  const [postsData, setPostsData] = useState<PostsApiResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
+  const authContext = useContext(AuthContext)
   const pageSize = 10
 
-  const fetchPosts = async (page: number) => {
-    setLoading(true)
-    setError('')
-    
-    // TODO: Conectar con el servicio de posts
-    // Datos de ejemplo por ahora
-    const allMockPosts: PostData[] = [
-      // Página 1
-      { id: 1, message: "¡Hola mundo! Este es mi primer post en la red social.", created_at: "2024-01-15T10:30:00.000Z", user: { id: 1, first_name: "Jane", last_name: "Doe", alias: "Jany" }},
-      { id: 2, message: "Configurando mi nueva cuenta. ¡Espero conocer gente interesante!", created_at: "2024-01-15T09:15:00.000Z", user: { id: 2, first_name: "John", last_name: "Smith", alias: "Johnny" }},
-      { id: 3, message: "¿Alguien más piensa que el desarrollo web es fascinante? Cada día aprendo algo nuevo.", created_at: "2024-01-14T16:45:00.000Z", user: { id: 1, first_name: "Jane", last_name: "Doe", alias: "Jany" }},
-      { id: 4, message: "Trabajando en un nuevo proyecto. ¡Muy emocionado por los resultados!", created_at: "2024-01-14T14:20:00.000Z", user: { id: 3, first_name: "Alice", last_name: "Johnson", alias: "AliceJ" }},
-      { id: 5, message: "El café de esta mañana estaba perfecto ☕", created_at: "2024-01-14T08:30:00.000Z", user: { id: 2, first_name: "John", last_name: "Smith", alias: "Johnny" }},
-      { id: 6, message: "Reflexionando sobre los cambios que trae el nuevo año.", created_at: "2024-01-13T19:45:00.000Z", user: { id: 4, first_name: "Bob", last_name: "Wilson", alias: "BobW" }},
-      { id: 7, message: "¿Alguien ha probado la nueva librería de React? Parece prometedora.", created_at: "2024-01-13T15:10:00.000Z", user: { id: 1, first_name: "Jane", last_name: "Doe", alias: "Jany" }},
-      { id: 8, message: "Día productivo en la oficina. Terminé todas las tareas pendientes.", created_at: "2024-01-13T12:00:00.000Z", user: { id: 3, first_name: "Alice", last_name: "Johnson", alias: "AliceJ" }},
-      { id: 9, message: "Los domingos son perfectos para descansar y planificar la semana.", created_at: "2024-01-12T16:30:00.000Z", user: { id: 2, first_name: "John", last_name: "Smith", alias: "Johnny" }},
-      { id: 10, message: "Aprendiendo nuevas tecnologías nunca se detiene en este campo.", created_at: "2024-01-12T11:15:00.000Z", user: { id: 4, first_name: "Bob", last_name: "Wilson", alias: "BobW" }},
-      // Página 2
-      { id: 11, message: "Segunda página de posts para probar la paginación.", created_at: "2024-01-11T20:00:00.000Z", user: { id: 1, first_name: "Jane", last_name: "Doe", alias: "Jany" }},
-      { id: 12, message: "La paginación está funcionando correctamente.", created_at: "2024-01-11T18:30:00.000Z", user: { id: 2, first_name: "John", last_name: "Smith", alias: "Johnny" }},
-      { id: 13, message: "Más contenido para llenar las páginas.", created_at: "2024-01-11T16:45:00.000Z", user: { id: 3, first_name: "Alice", last_name: "Johnson", alias: "AliceJ" }},
-      { id: 14, message: "Testing, testing, 1, 2, 3...", created_at: "2024-01-11T14:20:00.000Z", user: { id: 4, first_name: "Bob", last_name: "Wilson", alias: "BobW" }},
-      { id: 15, message: "¡La funcionalidad de paginación se ve genial!", created_at: "2024-01-11T12:10:00.000Z", user: { id: 1, first_name: "Jane", last_name: "Doe", alias: "Jany" }},
-    ]
-
-    // Simular paginación
-    const startIndex = (page - 1) * pageSize
-    const endIndex = startIndex + pageSize
-    const paginatedPosts = allMockPosts.slice(startIndex, endIndex)
-    
-    const mockResponse: PostsResponse = {
-      elements: paginatedPosts,
-      size: pageSize,
-      page: page,
-      total: allMockPosts.length
+  const fetchPosts = (page: number) => {
+    if (!authContext?.token) {
+      setError('No estás autenticado.')
+      return
     }
-
-    // Simular carga
-    setTimeout(() => {
-      setPostsData(mockResponse)
-      setLoading(false)
-    }, 800)
+    setError('')
+    setLoading(true)
+    postsService.getPosts(page, pageSize, authContext?.token)
+      .then(response => {
+        setPostsData(response.data)
+      })
+      .catch(() => {
+        setError('Error obteniendo los posts')
+      })
+      .finally(() => {
+        setLoading(false)
+      })
   }
 
   useEffect(() => {
-    fetchPosts(currentPage)
-  }, [currentPage])
+    fetchPosts(currentPage) 
+  }, [])
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
     setCurrentPage(page)
@@ -128,19 +86,64 @@ const PostsPage = () => {
   }
 
   const handleCreatePost = (message: string) => {
-    // TODO: Conectar con el servicio de posts
-    console.log('Creating post:', message)
-    // Después de crear el post, recargar la primera página
-    if (currentPage !== 1) {
-      setCurrentPage(1)
-    } else {
-      fetchPosts(1)
+    if (!authContext?.token) {
+      setError('No estás autenticado para crear un post.')
+      return
     }
+
+    postsService.createPost(message, authContext.token)
+      .then(() => {
+        // Después de crear el post, recargar la primera página
+        if (currentPage !== 1) {
+          setCurrentPage(1)
+        } else {
+          fetchPosts(1)
+        }
+      })
+      .catch((err) => {
+        if (axios.isAxiosError(err) && err.response) {
+          setError(err.response.data.message || 'Error al crear el post.')
+        } else {
+          setError('Error de conexión o desconocido.')
+        }
+      })
   }
 
   const handleLike = (postId: number) => {
-    // TODO: Conectar con el servicio de likes
-    console.log(`Like post ${postId}`)
+    if (!authContext?.token) {
+      setError("No estás autenticado para dar like.")
+      return
+    }
+
+    if (!postsData) return;
+
+    const post = postsData.elements.find(p => p.id === postId)
+    if (!post) return
+
+    // Actualización optimista de la UI
+    const updatedPosts = postsData.elements.map(p => {
+      if (p.id === postId) {
+        const likedByCurrentUser = !p.likedByCurrentUser
+        const likesCount = p.totalLikes + (likedByCurrentUser ? 1 : -1)
+        return {
+          ...p,
+          likedByCurrentUser,
+          totalLikes: likesCount,
+        }
+      }
+      return p
+    })
+    setPostsData({ ...postsData, elements: updatedPosts })
+
+    // Llamada a la API
+    const action = post.likedByCurrentUser
+      ? postsService.unlikePost
+      : postsService.likePost
+    action(postId, authContext.token).catch(() => {
+      setError("Error al procesar el like. Inténtalo de nuevo.")
+      // Revertir la actualización optimista si hay un error
+      setPostsData(postsData)
+    })
   }
 
   const totalPages = postsData ? Math.ceil(postsData.total / postsData.size) : 0
@@ -220,7 +223,6 @@ const PostsPage = () => {
           <Post
             mode="editable"
             onSubmit={handleCreatePost}
-            onCancel={() => {}} // No necesario cancelar en modo fijo
           />
         </Box>
 
@@ -243,10 +245,7 @@ const PostsPage = () => {
             <Post
               key={post.id}
               mode="readonly"
-              id={post.id}
-              message={post.message}
-              createdAt={post.created_at}
-              user={post.user}
+              post={post}
               onLike={handleLike}
             />
           ))}

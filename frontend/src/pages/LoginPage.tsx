@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useContext, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import {
   Box,
   Container,
@@ -16,11 +17,15 @@ import {
   Person,
   Lock,
 } from '@mui/icons-material'
-import { useNavigate } from 'react-router-dom'
 import { authService } from '../services/authService'
 import Button from '../components/Button'
+import { AuthContext } from '../context/AuthContext'
+import axios from 'axios'
 
 const LoginPage = () => {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const authContext = useContext(AuthContext)
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -28,7 +33,15 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (authContext?.isLoggingOut) {
+      authContext.setIsLoggingOut(false)
+    }
+    if (location.state?.error) {
+      setError(location.state.error)
+    }
+  }, [location.state, authContext])
 
   const handleInputChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -38,9 +51,9 @@ const LoginPage = () => {
     if (error) setError('')
   }
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault()
-    
+
     if (!formData.username || !formData.password) {
       setError('Por favor, completa todos los campos')
       return
@@ -49,16 +62,28 @@ const LoginPage = () => {
     setLoading(true)
     setError('')
 
-    try {
-      const response = await authService.login(formData.username, formData.password)
-      localStorage.setItem('token', response.token)
-      // TODO: Redirect to dashboard when implemented
-      console.log('Login successful:', response)
-    } catch (err: any) {
-      setError(err.message || 'Error al iniciar sesión')
-    } finally {
+    if (!authContext) {
+      setError('Auth context no está disponible')
       setLoading(false)
+      return
     }
+
+    authService
+      .login(formData.username, formData.password)
+      .then(response => {
+        authContext.setToken(response.data.token)
+        navigate('/posts')
+      })
+      .catch(err => {
+        if (axios.isAxiosError(err) && err.response) {
+          setError(err.response.data.message || 'Error en el servidor')
+        } else {
+          setError('Error de conexión o desconocido')
+        }
+      })
+      .finally(() => {
+        setLoading(false)
+      })
   }
 
   return (

@@ -1,10 +1,9 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import {
   AppBar,
   Toolbar,
   Typography,
   Box,
-  IconButton,
   Menu,
   MenuItem,
   Avatar as MuiAvatar,
@@ -16,9 +15,9 @@ import {
 } from '@mui/icons-material'
 import { styled } from '@mui/material/styles'
 import { Outlet, useNavigate } from 'react-router-dom'
-import { authService } from '../services/authService'
+import { AuthContext } from '../context/AuthContext'
 
-const StyledAppBar = styled(AppBar)(({ theme }) => ({
+const StyledAppBar = styled(AppBar)(() => ({
   background: '#111111',
   border: 'none',
   borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
@@ -28,7 +27,7 @@ const StyledAppBar = styled(AppBar)(({ theme }) => ({
   zIndex: 1100,
 }))
 
-const StyledToolbar = styled(Toolbar)(({ theme }) => ({
+const StyledToolbar = styled(Toolbar)(() => ({
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
@@ -36,7 +35,7 @@ const StyledToolbar = styled(Toolbar)(({ theme }) => ({
   minHeight: '64px',
 }))
 
-const Logo = styled(Typography)(({ theme }) => ({
+const Logo = styled(Typography)(() => ({
   color: '#ffffff',
   fontWeight: 700,
   fontSize: '1.5rem',
@@ -47,7 +46,7 @@ const Logo = styled(Typography)(({ theme }) => ({
   },
 }))
 
-const UserSection = styled(Box)(({ theme }) => ({
+const UserSection = styled(Box)(() => ({
   display: 'flex',
   alignItems: 'center',
   gap: '12px',
@@ -61,7 +60,7 @@ const UserSection = styled(Box)(({ theme }) => ({
   },
 }))
 
-const UserAvatar = styled(MuiAvatar)(({ theme }) => ({
+const UserAvatar = styled(MuiAvatar)(() => ({
   backgroundColor: 'rgba(255, 255, 255, 0.1)',
   color: '#ffffff',
   width: 36,
@@ -72,7 +71,7 @@ const UserAvatar = styled(MuiAvatar)(({ theme }) => ({
   transition: 'all 0.3s ease',
 }))
 
-const StyledMenu = styled(Menu)(({ theme }) => ({
+const StyledMenu = styled(Menu)(() => ({
   '& .MuiPaper-root': {
     background: '#111111',
     border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -83,7 +82,7 @@ const StyledMenu = styled(Menu)(({ theme }) => ({
   },
 }))
 
-const StyledMenuItem = styled(MenuItem)(({ theme }) => ({
+const StyledMenuItem = styled(MenuItem)(() => ({
   color: '#ffffff',
   padding: '12px 16px',
   fontSize: '0.875rem',
@@ -101,15 +100,10 @@ const StyledMenuItem = styled(MenuItem)(({ theme }) => ({
 const Layout: React.FC = () => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
   const navigate = useNavigate()
+  const authContext = useContext(AuthContext)
   const open = Boolean(anchorEl)
 
-  // Mock user data - en una implementación real vendría del contexto de auth
-  const currentUser = {
-    first_name: 'Jane',
-    last_name: 'Doe',
-    alias: 'Jany',
-    id: 1
-  }
+  const currentUser = authContext?.userInfo
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)
@@ -120,13 +114,14 @@ const Layout: React.FC = () => {
   }
 
   const handleProfileClick = () => {
-    navigate(`/profile/${currentUser.id}`)
+    navigate('/profile')
     handleMenuClose()
   }
 
   const handleLogout = () => {
-    authService.logout()
-    navigate('/login')
+    if (authContext) {
+      authContext.logout()
+    }
     handleMenuClose()
   }
 
@@ -135,7 +130,7 @@ const Layout: React.FC = () => {
   }
 
   const getInitials = (firstName: string, lastName: string) => {
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
+    return `${firstName?.charAt(0)}${lastName?.charAt(0)}`.toUpperCase()
   }
 
   return (
@@ -148,7 +143,7 @@ const Layout: React.FC = () => {
 
           <UserSection onClick={handleMenuClick}>
             <UserAvatar>
-              {getInitials(currentUser.first_name, currentUser.last_name)}
+              {getInitials(currentUser?.first_name || '', currentUser?.last_name || '')}
             </UserAvatar>
             <Box>
               <Typography
@@ -159,7 +154,7 @@ const Layout: React.FC = () => {
                   fontSize: '0.875rem',
                 }}
               >
-                {currentUser.first_name} {currentUser.last_name}
+                {currentUser?.first_name} {currentUser?.last_name}
               </Typography>
               <Typography
                 variant="caption"
@@ -168,7 +163,7 @@ const Layout: React.FC = () => {
                   fontSize: '0.75rem',
                 }}
               >
-                @{currentUser.alias}
+                @{currentUser?.alias || ''}
               </Typography>
             </Box>
             <ExpandMore

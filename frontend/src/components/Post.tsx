@@ -13,26 +13,17 @@ import {
 import { styled } from '@mui/material/styles'
 import Button from './Button'
 import Avatar from './Avatar'
-
-interface User {
-  id: number
-  first_name: string
-  last_name: string
-  alias: string
-}
+import type { Post as PostType } from '../types/post'
 
 interface PostProps {
-  id?: number
-  message?: string
-  createdAt?: string
-  user?: User
+  post?: PostType
   onLike?: (postId: number) => void
   mode?: 'readonly' | 'editable'
   onSubmit?: (message: string) => void
   onCancel?: () => void
 }
 
-const StyledPaper = styled(Paper)(({ theme }) => ({
+const StyledPaper = styled(Paper)(() => ({
   background: '#111111',
   border: '1px solid rgba(255, 255, 255, 0.05)',
   borderRadius: 16,
@@ -46,7 +37,7 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   },
 }))
 
-const LikeButton = styled(IconButton)(({ theme }) => ({
+const LikeButton = styled(IconButton)(() => ({
   color: 'rgba(255, 255, 255, 0.7)',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   position: 'relative',
@@ -81,21 +72,20 @@ const LikeButton = styled(IconButton)(({ theme }) => ({
   },
 }))
 
-const Post: React.FC<PostProps> = ({ 
-  id, 
-  message = '', 
-  createdAt, 
-  user, 
-  onLike, 
+const Post: React.FC<PostProps> = ({
+  post,
+  onLike,
   mode = 'readonly',
   onSubmit,
-  onCancel 
+  onCancel,
 }) => {
-  const [isLiked, setIsLiked] = useState(false)
-  const [editMessage, setEditMessage] = useState(message)
+  const { id, message, created_at, user, likedByCurrentUser, totalLikes } = post || {}
+  const [isLiked, setIsLiked] = useState(likedByCurrentUser || false)
+  const [editMessage, setEditMessage] = useState(message || '')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return ''
     const date = new Date(dateString)
     const now = new Date()
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
@@ -129,7 +119,7 @@ const Post: React.FC<PostProps> = ({
   }
 
   const handleCancel = () => {
-    setEditMessage(message)
+    setEditMessage(message || '')
     if (onCancel) {
       onCancel()
     }
@@ -181,21 +171,11 @@ const Post: React.FC<PostProps> = ({
             />
             
             <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-              {onCancel && (
-                <Button
-                  variant="outline"
-                  customSize="small"
-                  onClick={handleCancel}
-                  disabled={isSubmitting}
-                >
-                  Cancelar
-                </Button>
-              )}
               <Button
                 variant="filled"
                 customSize="small"
                 onClick={handleSubmit}
-                disabled={!editMessage.trim() || isSubmitting}
+                disabled={!editMessage?.trim() || isSubmitting}
               >
                 {isSubmitting ? 'Publicando...' : 'Publicar'}
               </Button>
@@ -206,7 +186,7 @@ const Post: React.FC<PostProps> = ({
     )
   }
 
-  // Modo readonly (original)
+  // Modo readonly
   return (
     <StyledPaper elevation={0}>
       <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
@@ -239,7 +219,7 @@ const Post: React.FC<PostProps> = ({
                 @{user.alias}
               </Typography>
             )}
-            {createdAt && <Typography
+            {created_at && <Typography
               variant="caption"
               sx={{
                 color: 'rgba(255, 255, 255, 0.5)',
@@ -247,7 +227,7 @@ const Post: React.FC<PostProps> = ({
                 ml: 'auto',
               }}
             >
-              {formatDate(createdAt)}
+              {formatDate(created_at)}
             </Typography>}
           </Box>
           
@@ -258,6 +238,7 @@ const Post: React.FC<PostProps> = ({
               lineHeight: 1.6,
               mb: 2,
               fontSize: '0.95rem',
+              textAlign: 'left',
             }}
           >
             {message}
@@ -271,6 +252,15 @@ const Post: React.FC<PostProps> = ({
             >
               {isLiked ? <Favorite /> : <FavoriteBorder />}
             </LikeButton>
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'rgba(255, 255, 255, 0.5)',
+                fontSize: '0.75rem',
+              }}
+            >
+              {totalLikes}
+            </Typography>
           </Box>
         </Box>
       </Box>

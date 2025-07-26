@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import {
   Box,
   Container,
@@ -8,20 +8,13 @@ import {
   Paper,
 } from '@mui/material'
 import { styled } from '@mui/material/styles'
-import { useParams } from 'react-router-dom'
 import Avatar from '../components/Avatar'
+import type { User } from '../types/user'
+import { userService } from '../services/userService'
+import { AuthContext } from '../context/AuthContext'
+import axios from 'axios'
 
-interface User {
-  id: number
-  username: string
-  first_name: string
-  last_name: string
-  birth_date: string
-  alias: string
-  created_at: string
-}
-
-const ProfileHeader = styled(Paper)(({ theme }) => ({
+const ProfileHeader = styled(Paper)(() => ({
   background: '#111111',
   border: '1px solid rgba(255, 255, 255, 0.05)',
   borderRadius: 16,
@@ -34,7 +27,7 @@ const ProfileHeader = styled(Paper)(({ theme }) => ({
   },
 }))
 
-const InfoRow = styled(Box)(({ theme }) => ({
+const InfoRow = styled(Box)(() => ({
   display: 'flex',
   alignItems: 'center',
   gap: '12px',
@@ -44,43 +37,23 @@ const InfoRow = styled(Box)(({ theme }) => ({
   },
 }))
 
-const InfoLabel = styled(Typography)(({ theme }) => ({
+const InfoLabel = styled(Typography)(() => ({
   color: 'rgba(255, 255, 255, 0.6)',
   fontSize: '0.875rem',
   fontWeight: 500,
   minWidth: '120px',
 }))
 
-const InfoValue = styled(Typography)(({ theme }) => ({
+const InfoValue = styled(Typography)(() => ({
   color: '#ffffff',
   fontSize: '0.875rem',
   fontWeight: 400,
 }))
 
 const ProfilePage = () => {
-  const { id } = useParams<{ id: string }>()
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const authContext = useContext(AuthContext)
+  const user = authContext?.userInfo
 
-  useEffect(() => {
-    // TODO: Conectar con el servicio de usuarios /users/:id
-    const mockUser: User = {
-      id: parseInt(id || '1'),
-      username: 'jane_doe',
-      first_name: 'Jane',
-      last_name: 'Doe',
-      birth_date: '1990-01-15T00:00:00.000Z',
-      alias: 'Jany',
-      created_at: '2024-01-01T00:00:00.000Z'
-    }
-
-    // Simular carga
-    setTimeout(() => {
-      setUser(mockUser)
-      setLoading(false)
-    }, 1000)
-  }, [id])
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -104,24 +77,7 @@ const ProfilePage = () => {
     return age
   }
 
-  if (loading) {
-    return (
-      <Container maxWidth="md">
-        <Box
-          sx={{
-            minHeight: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <CircularProgress sx={{ color: '#ffffff' }} />
-        </Box>
-      </Container>
-    )
-  }
-
-  if (error || !user) {
+  if (!user) {
     return (
       <Container maxWidth="md">
         <Box sx={{ py: 4 }}>
@@ -133,7 +89,7 @@ const ProfilePage = () => {
               color: '#ffffff'
             }}
           >
-            {error || 'Usuario no encontrado'}
+            { 'Usuario no encontrado'}
           </Alert>
         </Box>
       </Container>
