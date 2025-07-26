@@ -21,7 +21,7 @@ Este proyecto es la interfaz de usuario para la aplicación de Red Social, desar
 
 1.  **Clona el repositorio**:
     ```bash
-    git clone <URL_DEL_REPOSITORIO>
+    git clone <git@github.com:juanpernett1299/RedSocial.git>
     ```
 2.  **Navega al directorio del frontend**:
     ```bash

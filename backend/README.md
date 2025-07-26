@@ -18,7 +18,7 @@ Este repositorio contiene el desarrollo de una red social con una arquitectura d
 
 1.  **Clona el repositorio:**
     ```bash
-    git clone <URL_DEL_REPOSITORIO>
+    git clone <git@github.com:juanpernett1299/RedSocial.git>
     cd RedSocial
     ```
 
