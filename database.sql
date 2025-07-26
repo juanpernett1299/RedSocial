@@ -29,3 +29,5 @@ CREATE TABLE likes (
     CONSTRAINT fk_likes_post FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
     CONSTRAINT unique_like UNIQUE (user_id, post_id)
 );
+
+-- LA CREACION DE LOS USUARIOS SE HACE MEDIANTE SEEDING CON PRISMA users/prisma/seed.js

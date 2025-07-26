@@ -7,7 +7,8 @@ const userController = require('./controllers/user');
 const app = express();
 const port = process.env.PORT || 3003;
 
-app.use(cors({ origin: 'http://localhost:5173' }));
+// Permito todos los orígenes por simplicidad
+app.use(cors({ origin: '*' }));
 app.use(express.json());
 
 // Test route

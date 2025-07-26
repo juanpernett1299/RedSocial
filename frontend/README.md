@@ -1,69 +1,40 @@
-# React + TypeScript + Vite
+# Red Social - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este proyecto es la interfaz de usuario para la aplicación de Red Social, desarrollada con React, Vite, y Material-UI. Permite a los usuarios interactuar con los servicios de backend para la autenticación, visualización y gestión de publicaciones.
 
-Currently, two official plugins are available:
+## Tecnologías Utilizadas
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+-   **[React](https://reactjs.org/)**: Biblioteca para construir interfaces de usuario.
+-   **[Vite](https://vitejs.dev/)**: Herramienta de desarrollo frontend moderna.
+-   **[TypeScript](https://www.typescriptlang.org/)**: Superset de JavaScript que añade tipado estático.
+-   **[Material-UI](https://mui.com/)**: Componentes de React para un desarrollo más rápido y sencillo.
+-   **[React Router](https://reactrouter.com/)**: Para la gestión de rutas en la aplicación.
+-   **[Axios](https://axios-http.com/)**: Cliente HTTP para realizar peticiones a la API.
+-   **[ESLint](https://eslint.org/)**: Herramienta de linting para JavaScript y TypeScript.
 
-## Expanding the ESLint configuration
+## Requisitos Previos
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- [Node.js](https://nodejs.org/) (versión 18 o superior)
+- [npm](https://www.npmjs.com/) (generalmente se instala con Node.js)
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Instalación y Ejecución
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+1.  **Clona el repositorio**:
+    ```bash
+    git clone <URL_DEL_REPOSITORIO>
+    ```
+2.  **Navega al directorio del frontend**:
+    ```bash
+    cd RedSocial/frontend
+    ```
+3.  **Instala las dependencias**:
+    ```bash
+    npm install
+    ```
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Scripts Disponibles
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+-   **`npm run dev`**: Inicia el servidor de desarrollo con Vite. La aplicación estará disponible en `http://localhost:5173`.
+-   **`npm run build`**: Compila el proyecto para producción. Los archivos se generan en el directorio `dist`.
+-   **`npm run lint`**: Ejecuta ESLint para analizar el código y encontrar problemas.
+-   **`npm run preview`**: Inicia un servidor local para previsualizar la build de producción.
