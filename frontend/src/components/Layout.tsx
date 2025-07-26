@@ -15,6 +15,7 @@ import {
 } from '@mui/icons-material'
 import { styled } from '@mui/material/styles'
 import { Outlet, useNavigate } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { AuthContext } from '../context/AuthContext'
 
 const StyledAppBar = styled(AppBar)(() => ({
@@ -35,15 +36,45 @@ const StyledToolbar = styled(Toolbar)(() => ({
   minHeight: '64px',
 }))
 
-const Logo = styled(Typography)(() => ({
+const Logo = styled(Typography)<{ isOnPostsPage: boolean }>(({ isOnPostsPage }) => ({
   color: '#ffffff',
   fontWeight: 700,
   fontSize: '1.5rem',
   cursor: 'pointer',
   transition: 'all 0.3s ease',
+  position: 'relative',
+  padding: '8px 16px',
+  borderRadius: '12px',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
   '&:hover': {
-    color: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    boxShadow: '0 0 15px rgba(255, 255, 255, 0.1)',
+    transform: 'translateY(-1px)',
+    ...(isOnPostsPage ? {} : {
+      '&::after': {
+        opacity: 1,
+        transform: 'translateX(-50%) translateY(8px)',
+      },
+    }),
   },
+  ...(!isOnPostsPage && {
+    '&::after': {
+      content: '"← Volver al feed"',
+      position: 'absolute',
+      top: '100%',
+      left: '50%',
+      transform: 'translateX(-50%) translateY(8px)',
+      fontSize: '0.75rem',
+      color: 'rgba(255, 255, 255, 0.6)',
+      opacity: 0,
+      transition: 'all 0.3s ease',
+      whiteSpace: 'nowrap',
+      pointerEvents: 'none',
+      zIndex: 1000,
+    },
+  }),
 }))
 
 const UserSection = styled(Box)(() => ({
@@ -100,6 +131,7 @@ const StyledMenuItem = styled(MenuItem)(() => ({
 const Layout: React.FC = () => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
   const navigate = useNavigate()
+  const location = useLocation()
   const authContext = useContext(AuthContext)
   const open = Boolean(anchorEl)
 
@@ -133,11 +165,14 @@ const Layout: React.FC = () => {
     return `${firstName?.charAt(0)}${lastName?.charAt(0)}`.toUpperCase()
   }
 
+  const isOnPostsPage = location.pathname === '/posts'
+
   return (
     <Box sx={{ minHeight: '100vh', background: '#000000' }}>
       <StyledAppBar position="sticky">
         <StyledToolbar>
-          <Logo onClick={handleLogoClick}>
+          <Logo onClick={handleLogoClick} isOnPostsPage={isOnPostsPage}>
+            {!isOnPostsPage && '← '}
             RedSocial
           </Logo>
 

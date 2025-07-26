@@ -6,7 +6,8 @@ const authController = require('./controllers/auth');
 const app = express();
 const port = process.env.PORT || 3001;
 
-app.use(cors({ origin: 'http://localhost:5173' }));
+// Permito todos los orígenes por simplicidad
+app.use(cors({ origin: '*' }));
 app.use(express.json());
 
 app.get('/auth/test', (req, res) => {
