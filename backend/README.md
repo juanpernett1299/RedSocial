@@ -49,8 +49,29 @@ Este repositorio contiene el desarrollo de una red social con una arquitectura d
 
 ## Uso
 
-El entorno está completamente configurado. Puedes probar el endpoint para obtener el perfil de un usuario ejecutando el siguiente comando en tu terminal:
-```bash
-curl http://localhost:3003/users/1
-```
-Deberías recibir un objeto JSON con la información del primer usuario creado en el script de seeding.
+El entorno está completamente configurado. Para interactuar con los endpoints protegidos, primero necesitas obtener un token de autenticación.
+
+1.  **Inicia sesión para obtener un token JWT:**
+    Puedes usar las credenciales de los usuarios creados en el script de seeding (por ejemplo, `jane_doe` con contraseña `password123`).
+
+    ```bash
+    curl -X POST -H "Content-Type: application/json" \
+    -d '{"username": "jane_doe", "password": "password123"}' \
+    http://localhost:3001/auth/login
+    ```
+
+    La respuesta será un objeto JSON con el token:
+    ```json
+    {"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."}
+    ```
+
+2.  **Usa el token para acceder a rutas protegidas:**
+    Copia el token de la respuesta anterior y guárdalo en una variable de entorno. Luego, úsalo en la cabecera `Authorization` para hacer peticiones a los endpoints protegidos, como el de listar publicaciones.
+
+    ```bash
+    # Reemplaza "tu_token_aqui" con el token que recibiste
+    TOKEN="tu_token_aqui"
+
+    curl -H "Authorization: Bearer $TOKEN" http://localhost:3002/posts
+    ```
+    Esto devolverá la lista de publicaciones en la red social.
