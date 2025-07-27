@@ -14,7 +14,7 @@ Este proyecto es la interfaz de usuario para la aplicación de Red Social, desar
 
 ## Requisitos Previos
 
-- [Node.js](https://nodejs.org/) (versión 18 o superior)
+- [Node.js](https://nodejs.org/) (versión usada 22.17.1)
 - [npm](https://www.npmjs.com/) (generalmente se instala con Node.js)
 
 ## Instalación y Ejecución
